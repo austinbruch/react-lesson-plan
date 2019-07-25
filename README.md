@@ -26,6 +26,7 @@ In general:
 Common lifecycle methods:
 
 ### [`constructor`](https://reactjs.org/docs/react-component.html#constructor)
+
 Constructor are functions that are called when you create an instance of a component. This is exactly the same as what we did a few weeks ago with constructor functions. Something like:
 ```javascript
 
@@ -65,11 +66,46 @@ class MyComponent extends React.Component {
 }
 ```
 
-One requirement regarding constructors is you _must_ call `super(props)` as the first thing you do, _if_ you choose to implement a constructor in your component. This allows for built-in React component _stuff_ to get setup. This is done automatically if you do not implement a constructor for your component.
+One requirement regarding constructors is that you _must_ call `super(props)` as the first thing you do, _if_ you choose to implement a constructor in your component. This allows for built-in React component _stuff_ to get setup. This is done automatically if you do not implement a constructor for your component.
 
 ### [`render`](https://reactjs.org/docs/react-component.html#render)
 
+`render` is the only lifecycle method that you are _required_ to implement when you create your own component. This method is what we're already used to using. It defines the content that your component displays/outputs. The return value can be DOM elements like `<input>`, `<div>`, or `<p>`. It can also be other React components e.g. `<App />`, `<MyComponent />`, etc. These elements can be nested arbitrarily deep, just like the regular DOM. You can also return fragments, arrays, strings, numbers, booleans, null, and portals. We will discuss fragments later on. Don't worry about the rest for the time being.
+
+One important rule to follow (which React will warn about if you violate it) is that you should _not_ modify component state directly within your render function. In other words, don't call `this.setState` within `render`.
+
 ### [`componentDidMount`](https://reactjs.org/docs/react-component.html#componentdidmount)
+
+`componentDidMount` is how React lets us know when a particular component was first added to the DOM. Sometimes you want to do something when a component is first created. A common use case is loading data from an API when a component mounts. That might look something like this:
+```jsx
+class MyComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            serverData: {}
+        };
+    }
+
+    componentDidMount() {
+        // Some fictional utility module that lets us call an API to get data
+        apiUtility.getData()
+        .then((data) => {
+            this.setState({
+                serverData: data
+            })
+        });
+    }
+
+    render() {
+        return (
+            <div>
+                {JSON.stringify(this.state.serverData)}
+            </div>
+        );
+    }
+}
+```
+
 
 ### [`componentDidUpdate`](https://reactjs.org/docs/react-component.html#componentdidupdate)
 
