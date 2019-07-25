@@ -106,8 +106,53 @@ class MyComponent extends React.Component {
 }
 ```
 
-
 ### [`componentDidUpdate`](https://reactjs.org/docs/react-component.html#componentdidupdate)
+
+`componentDidUpdate` gives us a way to execute code whenever the props and/or state have changed. This is not always necessary, but sometimes you may want to do some side effect when part of props or state changes. For example, maybe you need to reload some data from an API if a prop changes e.g. you have an ID of a news article that you need to load passed in as a prop, and as the ID prop changes, you load the next article data.
+
+```jsx
+class ArticleViewer extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            articleText: ''
+        };
+    }
+
+    componentDidMount() {
+        // Some fictional utility module that lets us call an API to get data
+        apiUtility.getData(this.props.articleId)
+        .then((data) => {
+            this.setState({
+                articleText: data
+            })
+        });
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.articleId !== this.props.articleId) {
+            // Only load data if we've switched article IDs
+            apiUtility.getData(this.props.articleId)
+            .then((data) => {
+                this.setState({
+                    articleText: data
+                })
+            });
+        }
+    }
+
+    render() {
+        return (
+            <div>
+                {this.state.articleText}
+            </div>
+        );
+    }
+}
+```
+
+One thing to be careful of:
+* Don't _always_ update state inside of `componentDidUpdate`. Otherwise you'll end up infinitely looping, as a state update triggers `componentDidUpdate`, which would then trigger another state update, etc. Instead, _conditionally_ update state, only under certain circumstances.
 
 ### [`componentWillUnmount`](https://reactjs.org/docs/react-component.html#componentwillunmount)
 
