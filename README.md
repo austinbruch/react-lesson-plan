@@ -15,15 +15,23 @@ From here, React mounts the component instance and our app is up and running. At
 
 Here's a good resource on [React component lifecycle](http://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/).
 
-In general:
-* a component gets constructed
-* the component gets mounted
-* the component gets rendered
-* the component can update 1+ times based on the flow of the app
-* the component gets unmounted
-* the component gets destroyed
-
 Common lifecycle methods:
+* `constructor`
+* `render`
+* `componentDidMount`
+* `componentDidUpdate`
+* `componentWillUnmount`
+
+### Student activity
+Discuss what you think each of these lifecycle methods do with the people around you.
+
+The general flow of a component:
+* a component gets constructed (`constructor`)
+* the component gets mounted (`componentDidMount`)
+* the component gets rendered (`render`)
+* the component can update 1+ times based on the flow of the app (`componentDidUpdate`)
+* the component gets unmounted (`componentWillUnmount`)
+* the component gets destroyed (no lifecycle method, since the component no longer exists)
 
 ### [`constructor`](https://reactjs.org/docs/react-component.html#constructor)
 
@@ -155,6 +163,31 @@ One thing to be careful of:
 * Don't _always_ update state inside of `componentDidUpdate`. Otherwise you'll end up infinitely looping, as a state update triggers `componentDidUpdate`, which would then trigger another state update, etc. Instead, _conditionally_ update state, only under certain circumstances.
 
 ### [`componentWillUnmount`](https://reactjs.org/docs/react-component.html#componentwillunmount)
+`componentWillUnmount` is a lifecycle method that gets called when a component is _just about_ to be taken out of the DOM and destroyed. This is the last chance you have to do anything with the component before it's destroyed.
+
+Setting state here `this.setState` will not do anything, since the component is not going to be rendered again.
+
+This is a good opportunity to do any required cleanup associated with the component. React's documentation lists examples like canceling timeouts/intervals or canceling network requests. Both are valid use cases.
+
+```jsx
+class MyComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.intervalId = window.setInterval(() => {
+            // Do something interesting here
+            console.log('This message logs out every second');
+        }, 1000);
+    }
+    
+    componentWillUnmount() {
+        window.clearInterval(this.intervalId);
+    }
+
+    render() {
+        return (<div>{'There\'s an interval running in the background. Check your console!'}</div>);
+    }
+}
+```
 
 ## Error Boundaries
 What happens when something goes wrong in one of your React components?
