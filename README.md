@@ -311,6 +311,92 @@ class App extends React.Component {
 }
 ```
 
+## [`Fragments`](https://reactjs.org/docs/fragments.html)
+Fragments provide a way to return arrays of elements without having to wrap them using a DOM element or some other actual React component.
 
+It is a very common use case to return an array of elements. Think about returning set of list items, or rows in a table. You may make a subcomponent for each list item, or each table row, but you will want to include an array of such elements.
 
-## Fragments
+An example:
+```jsx
+class MyTable extends React.Component {
+    render() {
+        return (
+            <table>
+                <th>
+                    <MyTableHeaders />
+                </th>
+            </table>
+        );
+    }
+}
+
+class MyTableHeaders extends React.Component {
+    render() {
+        return (
+            <td>{'Column 1 header'}</td>
+            <td>{'Column 2 header'}</td>
+        );
+    }
+}
+```
+
+This is invalid, because the return value from `MyTableHeaders.render` returns 2 elements. In JavaScript, you can only return 1 value.
+
+Remember how we talked about using `div`s to group things in the DOM? That is a very common pattern. You could try wrapping the `td`s in a `div`, like this:
+```jsx
+class MyTableHeaders extends React.Component {
+    render() {
+        return (
+            <div>
+                <td>{'Column 1 header'}</td>
+                <td>{'Column 2 header'}</td>
+            </div>
+        );
+    }
+}
+```
+That would result in this DOM:
+```HTML
+<table>
+    <th>
+        <div>
+            <td>Column 1 header</td>
+            <td>Column 2 header</td>
+        </div>
+    </th>
+</table>
+```
+However, this is invalid, since `div` elements are not valid as children within a `table` at this level, this solution does not work.
+
+This is where fragments come in.
+
+Fragments give us a way to group DOM elements and React components _without_ introducing extra DOM layers, like using `div`s does.
+
+We can fix our component like this:
+```jsx
+class MyTableHeaders extends React.Component {
+    render() {
+        return (
+            <React.Fragment>
+                <td>{'Column 1 header'}</td>
+                <td>{'Column 2 header'}</td>
+            </React.Fragment>
+        );
+    }
+}
+```
+
+which results in this DOM:
+```HTML
+<table>
+    <th>
+        <td>Column 1 header</td>
+        <td>Column 2 header</td>
+    </th>
+</table>
+```
+which is what we're after.
+
+There's also a shorthand for Fragments that looks like `<>` and `</>`. Don't be confused, they do the same thing as `<React.Fragment>` and `</React.Fragment>`.
+
+This gets us around JavaScript's limitation of only allowing 1 return value from each function. 
