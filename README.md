@@ -190,6 +190,127 @@ class MyComponent extends React.Component {
 ```
 
 ## Error Boundaries
-What happens when something goes wrong in one of your React components?
+What happens when something goes wrong in one of your React components? Let's look at an example:
+```jsx
+class App extends React.Component {
+    render() {
+        return (
+            <div>
+                <SomeComponent text={'Some Text'} />
+                <SomeComponent text={'sOmE oThEr TeXt'} />
+            </div>
+        );
+    }
+}
+
+class SomeComponent extends React.Component {
+    render() {
+        return (
+            <div>
+                <div>{'Original text: '}{this.props.text}</div>
+                <div>{'Lowercase text: '}{this.props.text.toLowerCase()}</div>
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+There's nothing wrong with this example, it will work perfectly fine.
+What if we change `App` to look like this:
+
+```jsx
+class App extends React.Component {
+    render() {
+        return (
+            <div>
+                <SomeComponent text={'Some Text'} />
+                <SomeComponent tetx={'sOmE oThEr TeXt'} />
+            </div>
+        );
+    }
+}
+```
+
+Note that we misspelled the `text` prop on the second instance of `SomeComponent` as `tetx`.
+
+In `SomeComponent.render`, we access `this.props.text` and we also call `this.props.text.toLowerCase()`.
+
+In this case, for the second instance of `SomeComponent`, `this.props.text` is `undefined`, since we passed the prop in as `tetx` instead of `text`. So when accessing `this.props.text`, we get `undefined`. When we call `this.props.text.toLowerCase()`, we're trying to call `toLowerCase()` on `undefined`. JavaScript will throw a runtime error here, since `undefined` does not have a method called `toLowerCase`.
+
+This results in an error during the `render` lifecycle method of the second `SomeComponent` instance.
+
+If you run this in the browser, you'll see that our entire application is gone, nothing is visible any more.
+
+When an error occurs in a lifecycle method of a component, that component is immediately unmounted, AND every parent component, up to the root of the React application _is also unmounted_. More on this below.
+
+This is where _Error Boundaries_ come into play. 
+
+Error boundaries are React components that specifically look for any errors that occur _in any child component_ and give you a chance to execute code in case an unexpected error occurs. Error boundaries give you the chance to render a _fallback UI_ in the case of an error in the React subtree of the error boundary component.
+
+>When an error occurs in a lifecycle method of a component, that component is immediately unmounted, AND every parent component, up to the root of the React application _is also unmounted_,
+
+__UNTIL__ an ancestor component _is an error boundary_. Once an error boundary is reached, the component unmounting is halted.
+
+In other words, error boundary components act as a stopping point for whenever your application breaks at runtime. They "contain the damage" of the broken React tree.
+
+Using error boundaries, you can ensure that if one part of your app breaks, other independent parts _are not affected_. Think about an app like Facebook. If the messenger React tree has some error, should the entire page get unmounted? Probably not. It would be better if just the messenger part went away, and the rest of the app continued to work as normal.
+
+### Implementing an error boundary
+Error boundaries are just normal React components, with one exception. A React component becomes an error boundary when it implements either the `componentDidCatch` and/or `getDerivedStateFromError` methods.
+
+```jsx
+class MyErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            caughtError: false
+        };
+    }
+
+    static getDerivedStateFromError(error) {
+        return {
+            caughtError: true
+        };
+    }
+
+    componentDidCatch(error, info) {
+        console.error(error);
+    }
+
+    render() {
+        if (this.state.caughtError) {
+            return (
+                <div>
+                    {'Some component inside this component encountered an error during a component lifecycle method!'}
+                </div>
+            );
+        } else {
+            return this.props.children;
+        }
+    }
+}
+```
+
+In our original example, you would use this error boundary component like this:
+```jsx
+class App extends React.Component {
+    render() {
+        return (
+            <div>
+                <MyErrorBoundary>
+                    <SomeComponent text={'Some Text'} />
+                </MyErrorBoundary>
+                <MyErrorBoundary>
+                    <SomeComponent tetx={'sOmE oThEr TeXt'} />
+                </MyErrorBoundary>
+            </div>
+        );
+    }
+}
+```
+
+
 
 ## Fragments
